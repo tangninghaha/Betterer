@@ -1,0 +1,210 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{% if note %}编辑题目{% else %}新建题目{% endif %}{% endblock title %}
+
+{% block content %}
+
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+  <div class="pc-content">
+    <!-- [ breadcrumb ] start -->
+    <div class="page-header">
+      <div class="page-block">
+        <div class="row align-items-center">
+          <div class="col-md-12">
+            <div class="page-header-title">
+              <h5 class="mb-0">{% if note %}编辑题目{% else %}新建题目{% endif %}</h5>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <ul class="breadcrumb mb-0">
+              <li class="breadcrumb-item"><a href="{{ url_for('home_blueprint.index') }}">主页</a></li>
+              <li class="breadcrumb-item"><a href="{{ url_for('home_blueprint.note') }}">题目列表</a></li>
+              <li class="breadcrumb-item" aria-current="page">{% if note %}编辑题目{% else %}新建题目{% endif %}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ breadcrumb ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="row">
+      <!-- [ Form Area ] start -->
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-header">
+            <h5>{% if note %}编辑题目信息{% else %}创建新题目{% endif %}</h5>
+          </div>
+          <div class="card-body">
+            <form method="POST">
+              <!-- hidden field: Question ID (edit mode only) -->
+              {% if note %}
+              <input type="hidden" name="note_id" value="{{ note.id }}">
+              {% endif %}
+
+              <!-- title input -->
+              <div class="mb-3">
+                <label for="title" class="form-label">题目标题 <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" value="{{ note.title if note else '' }}"
+                  placeholder="请输入题目标题" required>
+              </div>
+
+              <!-- category Selection -->
+              <div class="form-group">
+                <label for="category_id">分类</label>
+                <select id="category_id" name="category_id" class="form-control">
+                  <option value="">-- 选择分类 --</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal"
+                  data-bs-target="#addCategoryModal">
+                  + 新增分类
+                </button>
+              </div>
+
+              <!-- difficulty selection -->
+              <div class="mb-3">
+                <label for="difficulty" class="form-label">难度等级 <span class="text-danger">*</span></label>
+                <select class="form-select" id="difficulty" name="difficulty" required>
+                  <option value="">请选择难度</option>
+                  {% for level in range(1, 6) %}
+                  <option value="{{ level }}" {% if note and note.difficulty==level %}selected{% endif %}>
+                    {{ level }} - {{ '简单' if level == 1 else '较简单' if level == 2 else '中等' if level == 3 else '较难' if
+                    level == 4 else '困难' }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- label input -->
+              <div class="mb-3">
+                <label for="tags" class="form-label">标签</label>
+                <input type="text" class="form-control" id="tags" name="tags" value="{{ note.tags if note else '' }}"
+                  placeholder="请输入标签，用英文半角逗号分隔（例如：数组,字符串,动态规划）">
+              </div>
+
+              <!-- topic content -->
+              <div class="mb-3">
+                <label for="content_md" class="form-label">题目内容（支持Markdown）</label>
+                <textarea class="form-control" id="content_md" name="content_md" rows="10"
+                  placeholder="请输入题目描述、要求等内容">{{ note.content_md if note else '' }}</textarea>
+              </div>
+
+              <!-- personal note -->
+              <div class="mb-3">
+                <label for="notes" class="form-label">个人注释</label>
+                <textarea class="form-control" id="notes" name="notes" rows="5"
+                  placeholder="请输入个人解题思路、注意事项等">{{ note.notes if note else '' }}</textarea>
+              </div>
+
+              <!-- solution -->
+              <div class="mb-3">
+                <label for="solution" class="form-label">解法（支持Markdown）</label>
+                <textarea class="form-control" id="solution" name="solution" rows="10"
+                  placeholder="请输入解题步骤、代码实现等">{{ note.solution if note else '' }}</textarea>
+              </div>
+
+              <!-- operation button -->
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                  {% if note %}更新题目{% else %}创建题目{% endif %}
+                </button>
+                <a href="{{ url_for('home_blueprint.note_detail', note_id=note.id) if note else url_for('home_blueprint.note') }}"
+                  class="btn btn-secondary">取消</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- [ Form Area ] end -->
+      <div class="modal fade" id="addCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">新增分类</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label>分类名称</label>
+                <input type="text" id="newCategoryName" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label>父分类</label>
+                <select id="newCategoryParent" class="form-control">
+                  <option value="">-- 顶级分类 --</option>
+                  <!-- 动态加载分类树 -->
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary" id="saveCategory">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ Main Content ] end -->
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='assets/js/plugins/jquery.min.js') }}"></script>
+<script>
+  function loadCategories() {
+    fetch("{{ url_for('home_blueprint.get_categories') }}")
+      .then(res => res.json())
+      .then(tree => {
+        function renderOptions(nodes, level = 0) {
+          let options = '';
+          nodes.forEach((node, index) => {
+            // 层级符号逻辑：顶级无前缀，子级用│和├─/└─区分
+            const isLast = index === nodes.length - 1;
+            let prefix = '';
+
+            if (level > 0) {
+              // 父级前缀（空白或竖线）
+              prefix = level > 1 ? '│  '.repeat(level - 1) : '';
+              // 当前层级符号（分支或结束）
+              prefix += isLast ? '└─ ' : '├─ ';
+            }
+
+            // 保留选中状态判断
+            const selected = {{ note.category_id|tojson if note else 'null' }} === node.id ? 'selected' : '';
+            options += `<option value="${node.id}" ${selected}>${prefix}${node.name}</option>`;
+
+            if (node.children.length > 0) {
+              options += renderOptions(node.children, level + 1);
+            }
+          });
+          return options;
+        }
+        const options = renderOptions(tree);
+        document.getElementById('category_id').innerHTML = '<option value="">-- 选择分类 --</option>' + options;
+        document.getElementById('newCategoryParent').innerHTML = '<option value="">-- 顶级分类 --</option>' + options;
+      });
+  }
+
+  // 保存新分类
+  document.getElementById('saveCategory').addEventListener('click', () => {
+    const name = document.getElementById('newCategoryName').value;
+    const parentId = document.getElementById('newCategoryParent').value || null;
+    fetch("{{ url_for('home_blueprint.create_category') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, parent_id: parentId })
+    }).then(res => res.json())
+      .then(data => {
+        if (data.id) {
+          alert('分类创建成功');
+          loadCategories(); // 重新加载分类
+          $('#addCategoryModal').modal('hide');
+        }
+      });
+  });
+
+  // 页面加载时初始化分类
+  loadCategories();
+</script>
+
+{% endblock content %}

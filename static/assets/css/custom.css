@@ -1,0 +1,84 @@
+/* 补充表格样式 */
+.markdown-content table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+}
+
+.markdown-content th,
+.markdown-content td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border: 1px solid #dee2e6;
+}
+
+.markdown-content thead th {
+  vertical-align: bottom;
+  background-color: #f8f9fa;
+}
+
+.markdown-content tbody + tbody {
+  border-top: 2px solid #dee2e6;
+}
+
+/* 补充代码高亮样式 */
+.codehilite {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.codehilite pre {
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 0;
+}
+
+.codehilite code {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9rem;
+}
+
+/* 脚注样式 */
+.footnote-ref {
+  vertical-align: super;
+  font-size: 0.8em;
+}
+
+.footnote {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #dee2e6;
+}
+
+/* 列表补充样式 */
+.markdown-content ul ul,
+.markdown-content ol ul,
+.markdown-content ul ol,
+.markdown-content ol ol {
+  margin-bottom: 0;
+}
+
+/* 图片样式 */
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+/* 定义列表样式 */
+.markdown-content dl {
+  margin-bottom: 1rem;
+}
+
+.markdown-content dt {
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.markdown-content dd {
+  margin-bottom: 0.5rem;
+  margin-left: 1.5rem;
+}

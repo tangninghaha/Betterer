@@ -1,0 +1,83 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ doc_title or '文档详情' }}{% endblock title %}
+
+{% block content %}
+
+<div class="pc-container">
+  <div class="pc-content">
+    <!-- [ breadcrumb ] start -->
+    <div class="page-header">
+      <div class="page-block">
+        <div class="row align-items-center">
+          <div class="col-md-12">
+            <div class="page-header-title">
+              <h5 class="mb-0">文档详情</h5>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <ul class="breadcrumb mb-0">
+              <li class="breadcrumb-item"><a href="{{ url_for('home_blueprint.index') }}">主页</a></li>
+              <li class="breadcrumb-item"><a href="{{ url_for('docs_blueprint.docs_page') }}">文档中心</a></li>
+              <li class="breadcrumb-item" aria-current="page">{{ doc_title }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ breadcrumb ] end -->
+
+    <!-- [ doc detail ] start -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="card-title">{{ doc_title }}</h3>
+              <a href="{{ url_for('docs_blueprint.docs_page') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="feather icon-arrow-left"></i> 返回文档列表
+              </a>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- Markdown内容（后端渲染） -->
+            <div class="markdown-content">
+              {{ content_md|markdown|safe }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ doc detail ] end -->
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<!-- 代码高亮 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/plugins/highlightjs.default.min.css') }}">
+<script src="{{ url_for('static', filename='assets/js/plugins/highlight.min.js') }}"></script>
+
+<script>
+  // 配置MathJax
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // 代码高亮
+    hljs.highlightAll();
+  });
+</script>
+<!-- MathJax 用于渲染数学公式 -->
+<script defer src="{{ url_for('static', filename='assets/js/plugins/mathjax.tex-svg.js') }}"></script>
+{% endblock extra_js %}

@@ -1,0 +1,108 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} 个人资料 {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+            <div class="row align-items-center">
+                <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="mb-0">个人资料</h5>
+                </div>
+                </div>
+                <div class="col-md-12">
+                <ul class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('home_blueprint.index') }}">主页</a></li>
+                    <li class="breadcrumb-item"><a href="javascript: void(0)">用户</a></li>
+                    <li class="breadcrumb-item" aria-current="page">个人资料</li>
+                </ul>
+                </div>
+            </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+
+        <div class="row">
+            <div class="col-sm-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>编辑信息</h5>
+                    </div>
+                    <div class="card-block px-4 pt-3">
+                        <form class="row" method="POST">
+                            {{ form.hidden_tag() }}
+
+                            {% for field in form %}
+                                {% if field.type in ['CSRFTokenField', 'HiddenField'] %}
+                                    {{ field() }}
+                                {% else %}
+                                    <div class="{% if field.name in full_width_fields %}col-sm-12{% else %}col-sm-6{% endif %}">
+                                        <div class="form-group">
+                                            <label for="" class="form-label">
+                                                {% if field.name == 'username' %}
+                                                用户名
+                                                {% elif field.name == 'email' %}
+                                                邮箱
+                                                {% elif field.name == 'bio' %}
+                                                简介
+                                                {% else %}
+                                                {{ field.name|replace_value("_") }}
+                                                {% endif %}
+                                                {% if field.name in readonly_fields %}(只读){% endif %}
+                                            </label>
+                                            {{ field(class_="form-control", readonly=True if field.name in readonly_fields else False) }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+
+                            <div class="col-sm-12 mb-2">
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">保存</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-block">
+                        <div class="d-flex align-items-center justify-content-center flex-column">
+                            <div class="w-50 p-3 text-center">
+                                <img src="{{ url_for('static', filename='assets/images/user/avatar.jpg') }}" alt="profile image" class="img-fluid rounded-circle">
+                            </div>
+                            <div class="text-center">
+                                <h4 class="font-weight-bold h6">
+                                    {{ current_user.username }}
+                                </h4>
+                                <p class="font-italic text-muted">
+                                    {% if current_user.email %} {{ current_user.email }} {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="small font-weight-light mt-4 text-center text-muted">
+                            <p>
+                                此页面是您的私人空间
+                                <br />
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

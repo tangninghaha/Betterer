@@ -1,0 +1,90 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}文档中心{% endblock title %}
+
+{% block content %}
+
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="mb-0">文档中心</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <ul class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ url_for('home_blueprint.index') }}">主页</a></li>
+                            <li class="breadcrumb-item" aria-current="page">文档</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+
+        <!-- [ 文档列表 ] start -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>文档列表</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if error %}
+                            <div class="alert alert-danger">{{ error }}</div>
+                        {% endif %}
+
+                        <div class="row" id="doc-cards">
+                            {% if docs_list and docs_list|length > 0 %}
+                                {% for doc in docs_list %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 doc-card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                              {% if doc.name == 'LICENSE.md' %}
+                                              许可协议
+                                              {% elif doc.name == 'TUTORIAL.md' %}
+                                              用户指南
+                                              {% elif doc.name == 'CHANGELOG.md' %}
+                                              更新日志
+                                              {% else %}
+                                              {{ doc.title }}
+                                              {% endif %}
+                                            </h5>
+                                            <p class="card-text text-truncate-3">{{ doc.name }}</p>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{{ url_for('docs_blueprint.view_doc', filename=doc.name) }}"
+                                               class="btn btn-primary btn-sm w-100 view-doc-btn">
+                                                查看文档
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="col-12 text-center py-5">
+                                    <p class="text-muted">没有找到任何文档</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ 文档列表 ] end -->
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<!-- 保持代码高亮和MathJax引用，以便在文档列表页也能正常工作 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/plugins/highlightjs.default.min.css') }}">
+<script src="{{ url_for('static', filename='assets/js/plugins/highlight.min.js') }}"></script>
+<script defer src="{{ url_for('static', filename='assets/js/plugins/mathjax.tex-svg.js') }}"></script>
+{% endblock extra_js %}

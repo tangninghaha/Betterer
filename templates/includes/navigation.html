@@ -1,0 +1,86 @@
+<header class="pc-header">
+  <div class="header-wrapper"> <!-- [Mobile Media Block] start -->
+    <div class="me-auto pc-mob-drp">
+      <ul class="list-unstyled">
+        <!-- ======= Menu collapse Icon ===== -->
+        <li class="pc-h-item pc-sidebar-collapse">
+          <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+            <i data-feather="menu"></i>
+          </a>
+        </li>
+        <li class="pc-h-item pc-sidebar-popup">
+          <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+            <i data-feather="menu"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- [Mobile Media Block end] -->
+    <div class="ms-auto">
+      <ul class="list-unstyled">
+        <li class="dropdown pc-h-item header-user-profile">
+          <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button"
+            aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+            <i data-feather="user"></i>
+          </a>
+          <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown p-0 overflow-hidden">
+            <div class="dropdown-header d-flex align-items-center justify-content-between bg-primary">
+              <div class="d-flex my-2">
+                <div class="flex-shrink-0">
+                  <img src="{{ url_for('static', filename='assets/images/user/avatar-2.jpg') }}" alt="user-image"
+                    class="user-avtar wid-35" />
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  {% if current_user.is_authenticated %}
+                    <h6 class="text-white mb-1">{{ current_user.username }}</h6>
+                    <span class="text-white text-opacity-75">{{ current_user.email }}</span>
+                  {% else %}
+                    <h6 class="text-white mb-1">Guest</h6>
+                    <span class="text-white text-opacity-75">未登录访客</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="dropdown-body">
+              <div class="profile-notification-scroll position-relative" style="max-height: calc(100vh - 225px)">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('home_blueprint.profile') }}" class="dropdown-item">
+                  <span>
+                    <svg class="pc-icon text-muted me-2">
+                      <use xlink:href="#custom-setting-outline"></use>
+                    </svg>
+                    <span>设置</span>
+                  </span>
+                </a>
+                <a href="{{ url_for('authentication_blueprint.change_password') }}" class="dropdown-item">
+                  <span>
+                    <svg class="pc-icon text-muted me-2">
+                      <use xlink:href="#custom-lock-outline"></use>
+                    </svg>
+                    <span>修改密码</span>
+                  </span>
+                </a>
+                {% endif %}
+                <div class="d-grid my-2">
+                  {% if current_user.is_authenticated %}
+                  <a href="{{ url_for('authentication_blueprint.logout') }}" class="btn btn-primary">
+                    <svg class="pc-icon me-2">
+                      <use xlink:href="#custom-logout-1-outline"></use>
+                    </svg>注销
+                  </a>
+                  {% else %}
+                  <a href="{{ url_for('authentication_blueprint.login') }}" class="btn btn-primary">
+                    <svg class="pc-icon me-2">
+                      <use xlink:href="#custom-logout-1-outline"></use>
+                    </svg>登录
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>

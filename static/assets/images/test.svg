@@ -1,0 +1,27 @@
+<svg width="130" height="35" viewBox="0 0 130 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- 左侧图标 -->
+<rect width="35" height="35" rx="10" fill="url(#paint0_linear_1826_215)"/>
+<g clip-path="url(#clip0_1826_215)">
+  <path d="M26.166 13L18.25 20.917L14.083 16.75L7.833 23" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M21.167 13H26.167V18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<text 
+  x="85" 
+  y="20" 
+  font-family="Roboto, 'Helvetica Neue', Arial, sans-serif" 
+  font-size="20" 
+  font-weight="200" 
+  fill="#ffffff" 
+  text-anchor="middle" 
+  dominant-baseline="middle"
+>Betterer</text>
+<defs>
+  <linearGradient id="paint0_linear_1826_215" x1="31.5" y1="4" x2="3.5" y2="32.5" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#1DE9B6"/>
+    <stop offset="1" stop-color="#1DC4E9"/>
+  </linearGradient>
+  <clipPath id="clip0_1826_215">
+    <rect width="20" height="20" fill="white" transform="translate(7 8)"/>
+  </clipPath>
+</defs>
+</svg>

@@ -1,0 +1,229 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ question.title or '题目详情' }}{% endblock title %}
+
+{% block content %}
+
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+  <div class="pc-content">
+    <!-- [ breadcrumb ] start -->
+    <div class="page-header">
+      <div class="page-block">
+        <div class="row align-items-center">
+          <div class="col-md-12">
+            <div class="page-header-title">
+              <h5 class="mb-0">题目详情</h5>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <ul class="breadcrumb mb-0">
+              <li class="breadcrumb-item"><a href="{{ url_for('home_blueprint.index') }}">主页</a></li>
+              <li class="breadcrumb-item"><a href="{{ url_for('home_blueprint.note') }}">浏览</a></li>
+              <li class="breadcrumb-item" aria-current="page">{{ question.title or '无标题' }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ breadcrumb ] end -->
+
+    <!-- [ question detail ] start -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="card-title">{{ question.title or '无标题' }}</h3>
+              <div>
+                {% if question.difficulty %}
+                <span class="badge difficulty-badge
+                                  {% if question.difficulty == 1 %}bg-success
+                                  {% elif question.difficulty == 2 %}bg-info
+                                  {% elif question.difficulty == 3 %}bg-secondary
+                                  {% elif question.difficulty == 4 %}bg-warning
+                                  {% else %}bg-danger{% endif %}">
+                  难度: {{ question.difficulty }}
+                </span>
+                {% endif %}
+
+
+                {% macro get_category_chain(category, chain=[]) %}
+                  {% if category %}
+                    {# 将当前分类名称加入链中 #}
+                    {% set new_chain = chain + [category.name] %}
+                    {# 递归处理父分类 #}
+                    {{ get_category_chain(category.parent, new_chain) }}
+                  {% else %}
+                    {# 递归终止，返回收集到的链 #}
+                    {{ chain|join('|') }}  {# 用临时分隔符拼接，避免返回列表（Jinja宏只能返回字符串） #}
+                  {% endif %}
+                {% endmacro %}
+
+                {% if question.category_id and question.category %}
+                  {% set chain_str = get_category_chain(question.category) %}
+                  {% set category_chain = chain_str.split('|')|reverse %}
+
+                  <span class="badge bg-info mb-2">{{ category_chain|join(' > ') }}</span>
+                {% else %}
+                  <span class="badge bg-info mb-2">未知分类</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+
+            <div class="d-flex justify-content-between mb-3">
+              <a href="{{ url_for('home_blueprint.edit', note_id=question.id) }}"
+                class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil"></i> 编辑题目
+              </a>
+              <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                data-bs-target="#deleteModal-{{ question.id }}">
+                <i class="bi bi-trash"></i> 删除题目
+              </button>
+            </div>
+
+            <!-- Time -->
+            <div class="card-meta mb-3">
+              <small class="text-muted">
+                上传时间：<span class="local-time"
+                  data-utc="{{ question.created_time.isoformat() + 'Z' if question.created_time else '' }}">{{
+                  question.created_time.strftime('%Y-%m-%d %H:%M:%S') if question.created_time else '未知日期' }}</span>
+              </small>
+              {% if question.updated_time and question.updated_time != question.created_time %}
+              <small class="text-muted ms-3">
+                最后修改：<span class="local-time" data-utc="{{ question.updated_time.isoformat() + 'Z' }}">{{
+                  question.updated_time.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+              </small>
+              {% endif %}
+            </div>
+
+            <!-- 标签 -->
+            {% if question.tags and question.tags.strip() %}
+            <div class="tags mb-4">
+              {% for tag in question.tags.split(',') %}
+              {% if tag.strip() %}
+              <span class="badge bg-light text-dark me-1">{{ tag.strip() }}</span>
+              {% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Markdown内容 -->
+            <div class="content-section pt-4">
+              <h5 class="mb-3">题目内容</h5>
+              <div class="markdown-content">
+                {% if question.content_md %}
+                {{ question.content_md|markdown|safe }}
+                {% else %}
+                无内容
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- 注释部分 -->
+            {% if question.notes %}
+            <div class="solution-section mt-5 pt-4 border-top">
+              <h5 class="mb-3">个人注释</h5>
+              <div class="personal-notes">
+                {{ question.notes }}
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- 解答部分 -->
+            {% if question.solution %}
+            <div class="solution-section mt-5 pt-4 border-top">
+              <h5 class="mb-3">解法</h5>
+              <div class="markdown-solution">
+                {{ question.solution|markdown|safe }}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="card-footer bg-transparent">
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('home_blueprint.edit', note_id=question.id) }}"
+                class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil"></i> 编辑题目
+              </a>
+              <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                data-bs-target="#deleteModal-{{ question.id }}">
+                <i class="bi bi-trash"></i> 删除题目
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ question detail ] end -->
+  </div>
+  <!-- [ delete confirm ] begin -->
+  <div class="modal fade" id="deleteModal-{{ question.id }}" tabindex="-1"
+    aria-labelledby="deleteModalLabel-{{ question.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel-{{ question.id }}">确认删除</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>确定要删除题目 <strong>"{{ question.title }}"</strong> 吗？此操作不可恢复。</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <a href="{{ url_for('home_blueprint.delete_note', note_id=question.id) }}" class="btn btn-danger">确认删除</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- [ delete confirm ] end-->
+</div>
+<!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+{% block extra_js %}
+<!-- 代码高亮 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/plugins/highlightjs.default.min.css') }}">
+<script src="{{ url_for('static', filename='assets/js/plugins/highlight.min.js') }}"></script>
+
+<script>
+  // 配置MathJax
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    svg: {
+      fontCache: 'global'
+    },
+    options: {
+      renderActions: {
+        find: [10, function (doc) {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/);
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+            const text = document.createTextNode('');
+            node.parentNode.replaceChild(text, node);
+            math.start = { node: text, delim: '', n: 0 };
+            math.end = { node: text, delim: '', n: 0 };
+            doc.math.push(math);
+          }
+        }, '']
+      }
+    },
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    hljs.highlightAll();
+  });
+</script>
+<!-- MathJax 用于渲染数学公式 -->
+<script defer src="{{ url_for('static', filename='assets/js/plugins/mathjax.tex-svg.js') }}"></script>
+<!-- <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"></script> -->
+{% endblock extra_js %}

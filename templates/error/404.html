@@ -1,0 +1,23 @@
+{% extends 'layouts/base-auth.html' %}
+
+{% block title %} 错误 404 - 页面未找到 {% endblock title %}
+
+{% block content %}
+
+    <div class="auth-wrapper">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="text-center">
+                        <img src="{{url_for('static', filename = 'assets/images/error/404.png')}}" alt="" class="img-fluid">
+                        <h5 class="text-muted my-4">完啦！页面未找到</h5>
+                        <a href="{{ url_for('home_blueprint.index') }}" class="btn btn-primary mb-4">
+                            <i class="feather icon-home me-2"></i>主页
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

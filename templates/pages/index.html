@@ -1,0 +1,92 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}仪表盘 - 首页{% endblock title %}
+
+{% block content %}
+
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="mb-0">首页</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <ul class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ url_for('home_blueprint.index') }}">主页</a></li>
+                            <li class="breadcrumb-item"><a href="javascript: void(0)">仪表盘</a></li>
+                            <li class="breadcrumb-item" aria-current="page">首页</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+        <!-- [ Main Content ] start -->
+        <div class="row">
+            <!-- [ note count view ] start -->
+            <div class="col-md-6 col-xl-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="mb-4">题目总数</h6>
+                        <div class="row d-flex align-items-center">
+                            <div class="col-9">
+                                <h3 class="f-w-300 d-flex align-items-center m-b-0"><i
+                                        class="feather icon-bar-chart text-success f-30 m-r-10"></i>{{ total_notes }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ note count view ] end -->
+            <!-- [ user count view ] start -->
+            <div class="col-md-6 col-xl-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="mb-4">用户数</h6>
+                        <div class="row d-flex align-items-center">
+                            <div class="col-9">
+                                <h3 class="f-w-300 d-flex align-items-center m-b-0"><i
+                                        class="feather icon-users text-success f-30 m-r-10"></i>{{ total_users }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ user count view ] end -->
+            {% if current_user.is_authenticated %}
+            <!-- [ current user count view ] start -->
+            <div class="col-md-6 col-xl-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="mb-4">当前用户题目数</h6>
+                        <div class="row d-flex align-items-center">
+                            <div class="col-9">
+                                <h3 class="f-w-300 d-flex align-items-center m-b-0"><i
+                                        class="feather icon-archive text-success f-30 m-r-10"></i>{{ current_user_notes }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ current user count view ] end -->
+            {% endif %}
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<script src="{{ url_for('static', filename='assets/js/plugins/apexcharts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/plugins/jsvectormap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/plugins/world.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/pages/dashboard-default.js') }}"></script>
+
+{% endblock extra_js %}

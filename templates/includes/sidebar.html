@@ -1,0 +1,116 @@
+<nav class="pc-sidebar">
+  <div class="navbar-wrapper">
+    <div class="m-header">
+      <a href="{{ url_for('home_blueprint.index') }}" class="b-brand text-primary">
+        <!-- ========   Change your logo from here   ============ -->
+        <img src="{{ url_for('static', filename='assets/images/logo-white.svg') }}" class="img-fluid" alt="logo">
+      </a>
+    </div>
+    <div class="navbar-content">
+
+      <ul class="pc-navbar">
+
+        <li class="pc-item pc-caption">
+          <label>导航</label>
+        </li>
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon">
+              <i data-feather="home"></i>
+            </span>
+            <span class="pc-mtext">仪表盘</span><span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item">
+              <a class="pc-link" href="{{ url_for('home_blueprint.index') }}">首页</a>
+            </li>
+            <!-- <li class="pc-item">
+              <a class="pc-link" href="{{ url_for('table_blueprint.dynamic_dt') }}">Dynamic DT</a>
+            </li> -->
+          </ul>
+        </li>
+
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon">
+              <i data-feather="eye"></i>
+            </span>
+            <span class="pc-mtext">浏览</span><span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item">
+              <a class="pc-link" href="{{ url_for('home_blueprint.note') }}">题目</a>
+            </li>
+            <li class="pc-item">
+              <a class="pc-link" href="{{ url_for('home_blueprint.categories') }}">分类管理</a>
+            </li>
+          </ul>
+        </li>
+        <li class="pc-item">
+          <a href="{{ url_for('home_blueprint.edit') }}" class="pc-link">
+            <span class="pc-micon">
+              <i data-feather="upload"></i>
+            </span>
+            <span class="pc-mtext">新建</span>
+          </a>
+        </li>
+        <li class="pc-item">
+          <a href="{{ url_for('docs_blueprint.docs_page') }}" class="pc-link">
+            <span class="pc-micon">
+              <i data-feather="file-text"></i>
+            </span>
+            <span class="pc-mtext">文档中心</span>
+          </a>
+        </li>
+
+        <li class="pc-item pc-caption">
+          <label>用户</label>
+          <i data-feather="feather"></i>
+        </li>
+        {% if current_user.is_authenticated %}
+        <li class="pc-item">
+          <a href="{{ url_for('home_blueprint.profile') }}" class="pc-link">
+            <span class="pc-micon">
+              <i data-feather="user"></i>
+            </span>
+            <span class="pc-mtext">个人资料</span>
+          </a>
+        </li>
+        <li class="pc-item">
+          <a href="{{ url_for('home_blueprint.settings') }}" class="pc-link">
+            <span class="pc-micon">
+              <i data-feather="settings"></i>
+            </span>
+            <span class="pc-mtext">用户设置</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if not current_user.is_authenticated %}
+        <li class="pc-item">
+          <a href="{{ url_for('authentication_blueprint.login') }}" class="pc-link">
+            <span class="pc-micon"><i data-feather="lock"></i></span>
+            <span class="pc-mtext">登录</span>
+          </a>
+        </li>
+        <li class="pc-item">
+          <a href="{{ url_for('authentication_blueprint.register') }}" class="pc-link">
+            <span class="pc-micon"><i data-feather="user-plus"></i></span>
+            <span class="pc-mtext">注册</span>
+          </a>
+        </li>
+        {% else %}
+        <li class="pc-item">
+          <a href="{{ url_for('authentication_blueprint.logout') }}" class="pc-link">
+            <span class="pc-micon">
+              <svg class="pc-icon me-2">
+                <use xlink:href="#custom-logout-1-outline"></use>
+              </svg>
+            </span>
+            <span class="pc-mtext">注销</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
