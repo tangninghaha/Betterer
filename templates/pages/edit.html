@@ -37,7 +37,7 @@
             <h5>{% if note %}编辑题目信息{% else %}创建新题目{% endif %}</h5>
           </div>
           <div class="card-body">
-            <form method="POST">
+            <form method="POST"  onsubmit="return true;">
               <!-- hidden field: Question ID (edit mode only) -->
               {% if note %}
               <input type="hidden" name="note_id" value="{{ note.id }}">
@@ -81,6 +81,44 @@
                 <label for="tags" class="form-label">标签</label>
                 <input type="text" class="form-control" id="tags" name="tags" value="{{ note.tags if note else '' }}"
                   placeholder="请输入标签，用英文半角逗号分隔（例如：数组,字符串,动态规划）">
+              </div>
+
+              <!-- 图片功能区 -->
+              <div class="mb-4 p-3 border rounded">
+                <h6>上传图片</h6>
+                <div class="row">
+                  <div class="col-md-8">
+                    <input type="file" id="imageUpload" accept="image/*" class="form-control mb-2">
+                    <small class="text-muted">支持PNG、JPG、GIF格式图片</small>
+                  </div>
+                  <div class="col-md-4">
+                    <!-- 初始显示：单个确认按钮 -->
+                    <button id="confirmSelectBtn" class="btn btn-secondary w-100 mb-2" type="button">
+                      <i class="bi bi-check-circle"></i> 确认
+                    </button>
+                    <!-- 确认后显示：两行紧凑按钮（默认隐藏） -->
+                    <div id="actionBtns" class="d-none gap-2 d-flex flex-wrap">
+                      <button id="cancelSelectBtn" class="btn btn-outline-danger flex-1" type="button">
+                        <i class="bi bi-x-circle"></i> 取消
+                      </button>
+                      <button id="ocrBtn" class="btn d-done btn-outline-primary flex-1" type="button">
+                        <i class="bi bi-file-text"></i> 转文字
+                      </button>
+                      <button id="insertBtn" class="btn btn-primary flex-1" type="button">
+                        <i class="bi bi-pencil"></i> 插入题目
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 预览与状态 -->
+                <div id="ocrPreview" class="mt-3 d-none">
+                  <img id="previewImage" src="" class="img-thumbnail mb-2" style="max-height: 200px;">
+                  <div class="progress" style="height: 5px; display: none;" id="ocrProgress">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <div id="ocrResult" class="mt-2 text-sm"></div>
+                </div>
               </div>
 
               <!-- topic content -->
@@ -170,7 +208,7 @@
             }
 
             // 保留选中状态判断
-            const selected = {{ note.category_id|tojson if note else 'null' }} === node.id ? 'selected' : '';
+            const selected = ("{{ note.category_id|tojson if note else 'null' }}" === node.id) ? 'selected' : '';
             options += `<option value="${node.id}" ${selected}>${prefix}${node.name}</option>`;
 
             if (node.children.length > 0) {
@@ -205,6 +243,226 @@
 
   // 页面加载时初始化分类
   loadCategories();
+
+  // 图片上传与OCR处理
+  let uploadData = null; // 存储上传后的本地路径信息
+  let ocrText = '';      // 存储OCR识别后的文字
+  const confirmBtn = document.getElementById('confirmSelectBtn');
+  const cancelBtn = document.getElementById('cancelSelectBtn');
+  const ocrBtn = document.getElementById('ocrBtn');
+  const insertBtn = document.getElementById('insertBtn');
+  const fileInput = document.getElementById('imageUpload');
+  const preview = document.getElementById('ocrPreview');
+  const previewImg = document.getElementById('previewImage');
+  const progress = document.getElementById('ocrProgress');
+  const resultDiv = document.getElementById('ocrResult');
+  const contentBox = document.getElementById('content_md');
+
+  // 保存文件对象的变量
+  let base64Data = null;
+
+  // 将图片文件转换为base64的函数
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // 移除data URL前缀（如"data:image/jpeg;base64,"）
+        const base64 = reader;
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  // 1. 确认选中按钮 - 功能：上传图片+预览，切换按钮状态
+  confirmBtn.addEventListener('click', async () => {
+    event.preventDefault();
+    event.stopPropagation();
+    const file = fileInput.files[0];
+    if (!file) {
+      alert('请先选择图片文件');
+      return;
+    }
+
+    base64Data = await fileToBase64(file);
+    console.log(base64Data);
+
+    // 显示预览区和进度条
+    preview.classList.remove('d-none');
+    progress.style.display = 'block';
+    progress.querySelector('.progress-bar').style.width = '30%';
+
+    try {
+      // 上传图片（仅上传，不触发OCR）
+      const formData = new FormData();
+      formData.append('image', file);
+      const uploadRes = await fetch('{{ url_for("home_blueprint.upload_image") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('图片上传失败，请检查格式（PNG/JPG/GIF）或稍后重试');
+      }
+
+      uploadData = await uploadRes.json();
+      if (!uploadData.success || !uploadData.image_url) {
+        throw new Error(uploadData.error || '上传未返回有效图片地址');
+      }
+
+      // 本地预览图片（保持之前的FileReader逻辑）
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      // 进度条更新，切换按钮状态
+      progress.querySelector('.progress-bar').style.width = '100%';
+      confirmBtn.classList.add('d-none');
+      actionBtns.classList.remove('d-none');
+      resultDiv.innerHTML = '<div class="alert alert-info">图片已选中，可转文字（开发中）或直接插入</div>';
+
+    } catch (err) {
+      resultDiv.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+    } finally {
+      setTimeout(() => {
+        progress.style.display = 'none';
+      }, 1000);
+    }
+  });
+
+  // 2. 取消选中按钮 - 功能：重置状态，清空预览
+  cancelBtn.addEventListener('click', () => {
+    event.preventDefault();
+    event.stopPropagation();
+    // 重置按钮显示
+    confirmBtn.classList.remove('d-none');
+    actionBtns.classList.add('d-none');
+    // 清空状态和预览
+    uploadData = null;
+    base64Data = null;
+    ocrText = '';
+    fileInput.value = ''; // 清空文件选择
+    previewImg.src = '';
+    preview.classList.add('d-none');
+    resultDiv.innerHTML = '';
+  });
+
+  // 3. 图片转文字按钮 - 功能：调用OCR识别，保存结果
+  ocrBtn.addEventListener('click', async () => {
+    event.preventDefault();
+    event.stopPropagation();
+    // 临时提示：功能暂未支持
+    resultDiv.innerHTML = '<div class="alert alert-info">图片转文字功能暂未开放，敬请期待</div>';
+    return; // 阻止后续无效请求
+    if (!uploadData) {
+      resultDiv.innerHTML = '<div class="alert alert-warning">请先选中并上传图片</div>';
+      return;
+    }
+
+    progress.style.display = 'block';
+    progress.querySelector('.progress-bar').style.width = '30%';
+    resultDiv.innerHTML = '<div class="alert alert-info">正在识别文字，请稍候...</div>';
+
+    try {
+      // 使用base64数据（适用于本地图片）
+      const requestBody = { image_data: base64Data };
+
+      // 使用base64 API端点
+      const apiEndpoint = '{{ url_for("deepseek_blueprint.deepseek_ocr_base64") }}';
+
+      const ocrRes = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      let ocrResponse;
+      try {
+        ocrResponse = await ocrRes.json();
+      } catch (e) {
+        throw new Error('识别服务响应格式异常，请稍后再试');
+      }
+
+      if (!ocrRes.ok) {
+        let errorMsg;
+        if (ocrResponse.error.includes('请先配置DeepSeek API密钥')) {
+          errorMsg = `识别失败：需配置API密钥。<br>
+                      <a href="{{ url_for('home_blueprint.settings') }}" class="alert-link">前往设置页面</a>`;
+        } else if (ocrResponse.error.includes('缺少图片URL参数')) {
+          errorMsg = '识别失败：图片数据无效，请重新上传';
+        } else {
+          errorMsg = `识别失败：${ocrResponse.error}`;
+        }
+        throw new Error(errorMsg);
+      }
+
+      if (!ocrResponse.success) {
+        throw new Error('未识别到文字，可能图片中无有效文字');
+      }
+
+      // 检查识别结果是否有效
+      if (!ocrResponse.text || ocrResponse.text.trim() === '' || ocrResponse.text.includes('未识别到文字')) {
+        throw new Error('未识别到有效文字，请尝试更清晰的图片');
+      }
+
+      // 保存识别结果，更新状态
+      ocrText = ocrResponse.text;
+      progress.querySelector('.progress-bar').style.width = '100%';
+      resultDiv.innerHTML = `
+        <div class="alert alert-success">
+          <strong>文字识别成功！</strong><br>
+          可点击"插入题目"添加到内容框
+        </div>
+        <div class="mt-2 p-2 border rounded bg-light">
+          <small>识别预览：</small><br>
+          <pre class="mt-1 small">${ocrText.substring(0, 200)}${ocrText.length > 200 ? '...' : ''}</pre>
+        </div>
+      `;
+
+    } catch (err) {
+      resultDiv.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+    } finally {
+      setTimeout(() => {
+        progress.style.display = 'none';
+      }, 1000);
+    }
+  });
+
+  // 4. 插入题目按钮 - 功能：将识别文字+图片链接插入内容框
+  insertBtn.addEventListener('click', async () => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!uploadData) {
+      resultDiv.innerHTML = '<div class="alert alert-warning">请先选中并上传图片</div>';
+      return;
+    }
+
+    // 若已识别文字，插入识别结果；否则仅插入图片链接
+    let insertContent = '';
+    if (ocrText) {
+      insertContent = `\n\n<!-- 图片识别内容开始 -->\n${ocrText}\n<!-- 图片识别内容结束 -->\n\n`;
+    }
+    // 插入图片链接（本地路径，保持用户需求）
+    // insertContent += `\n![题目图片](${base64Data.result})\n`;
+    insertContent += `\n![题目图片](${uploadData.image_url})\n`;
+
+    // 添加到内容框（光标位置插入，优化体验）
+    const contentBox = document.getElementById('content_md');
+    const cursorPos = contentBox.selectionStart;
+    const currentValue = contentBox.value;
+    contentBox.value = currentValue.substring(0, cursorPos) + insertContent + currentValue.substring(cursorPos);
+
+    // 更新光标位置
+    const newCursorPos = cursorPos + insertContent.length;
+    contentBox.setSelectionRange(newCursorPos, newCursorPos);
+    contentBox.focus();
+
+    // 提示插入成功
+    resultDiv.innerHTML = '<div class="alert alert-success">内容已成功插入题目框！</div>';
+  });
 </script>
 
 {% endblock content %}

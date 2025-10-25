@@ -13,6 +13,11 @@ class Config(object):
     USERS_ROLES  = { 'ADMIN'  :1 , 'USER'      : 2 }
     USERS_STATUS = { 'ACTIVE' :1 , 'SUSPENDED' : 2 }
 
+    # 新增缺失的配置项（根据项目实际需求调整值）
+    CURRENCY = {}  # 货币类型配置（示例为空字典）
+    PAYMENT_TYPE = {}  # 支付方式配置（示例为空字典）
+    STATE = {}  # 状态配置（示例为空字典）
+
     # celery
     CELERY_BROKER_URL     = "redis://localhost:6379"
     CELERY_RESULT_BACKEND = "redis://localhost:6379"
@@ -82,6 +87,10 @@ class Config(object):
 
     CDN_DOMAIN = os.getenv('CDN_DOMAIN')
     CDN_HTTPS = os.getenv('CDN_HTTPS', True)
+
+    # 上传图片处理
+    UPLOAD_FOLDER = user_documents / "uploads"
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB上限
 
 class ProductionConfig(Config):
     DEBUG = False

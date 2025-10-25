@@ -26,8 +26,6 @@
 
 ### 环境要求
 - Python 3.8+
-- 可选：Docker（推荐）
-
 
 ### 本地安装（手动）
 1. 克隆仓库
@@ -37,7 +35,7 @@ cd <项目目录>
 ```
 
 2. 创建虚拟环境并安装依赖
-   
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -50,7 +48,6 @@ pip install -r requirements.txt
 - 允许修改、扩展代码，但**不得移除源代码中的版权声明**（如文件头部的`Copyright (c) 2019 - present AppSeed.us`）
 - 禁止将本项目的UI元素、模板单独出售，或用于创建可售卖的HTML/CSS模板、CMS主题
 - 分发衍生作品时，需包含原始许可证文件
-
 
 ## 致谢
 

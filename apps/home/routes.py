@@ -7,7 +7,7 @@ import os, json, pprint
 import wtforms
 
 from apps.home import blueprint
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import render_template, request, redirect, url_for, flash, jsonify, current_app, send_from_directory, abort
 from flask_login import login_required, mixins
 from jinja2 import TemplateNotFound
 from flask_login import login_required, current_user
@@ -18,6 +18,9 @@ from apps.authentication.models import Users
 from flask_wtf import FlaskForm
 import math
 from apps.authentication.forms import SettingsForm
+import uuid
+from werkzeug.utils import secure_filename
+from apps.helpers import serverImageUrl  # 复用用现有图片URL生成工具
 
 @blueprint.route('/')
 @blueprint.route('/index')
@@ -420,3 +423,55 @@ def tasks_test():
 @blueprint.app_template_filter("replace_value")
 def replace_value(value, arg):
     return value.replace(arg, " ").title()
+
+# 新增图片上传路由
+@blueprint.route('/upload-image', methods=['POST'])
+@login_required
+def upload_image():
+    try:
+        """处理图片上传并返回图片URL"""
+        if 'image' not in request.files:
+            return jsonify({'error': '未找到图片文件'}), 400
+
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({'error': '未选择图片'}), 400
+
+        if file and allowed_file(file.filename):
+            # 生成唯一文件名
+            filename = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
+            upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+
+            # 确保上传目录存在
+            os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+            file.save(upload_path)
+
+            # 生成图片访问URL
+            image_url = serverImageUrl(filename)
+            return jsonify({
+                'success': True,
+                'image_url': str(image_url),
+                'filename': filename
+            })
+
+        return jsonify({'error': '不支持的图片格式'}), 400
+    except Exception as e:
+        # 捕获所有异常，返回JSON格式错误
+        return jsonify({'error': f'服务器错误: {str(e)}'}), 500
+
+
+# 允许的图片格式
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
+
+@blueprint.route('/upload-image/<filename>')
+@login_required
+def uploaded_file(filename):
+    """提供上传图片的HTTP访问接口"""
+    # 从配置中获取上传目录
+    if not allowed_file(filename):
+        abort(403)  # 禁止访问非图片文件
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    # 使用send_from_directory安全提供文件访问（防止路径遍历攻击）
+    return send_from_directory(upload_folder, filename)

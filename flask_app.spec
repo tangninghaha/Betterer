@@ -37,6 +37,7 @@ a = Analysis(
         # 包含静态文件和模板（源路径: 打包后路径）
         (str(root_path / "templates"), "templates"),
         (str(root_path / "static"), "static"),
+        (str(root_path / "docs"), "docs"),
     ],
     hiddenimports=[
         # 显式声明Flask相关隐式依赖
