@@ -6,6 +6,8 @@ Copyright (c) 2019 - present AppSeed.us
 import os
 from pathlib import Path
 
+user_documents = Path.home() / "Documents" / "Betterer"
+
 class Config(object):
 
     BASE_DIR = Path(__file__).resolve().parent
@@ -78,7 +80,6 @@ class Config(object):
 
     if USE_SQLITE:
 
-        user_documents = Path.home() / "Documents" / "Betterer"
         user_documents.mkdir(exist_ok=True)
         SQLALCHEMY_DATABASE_URI = f'sqlite:///{user_documents / "db.sqlite3"}'
 

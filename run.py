@@ -2,8 +2,30 @@
 """
 Copyright (c) 2019 - present AppSeed.us
 """
+import inspect
+
+# 保存原始的 getsource 方法
+original_getsource = inspect.getsource
+
+# 重写 getsource：返回占位字符串，避免 splitlines() 后为空列表
+def safe_getsource(func):
+    try:
+        source = original_getsource(func)
+        # 确保返回的源码至少有一行（防止空源码）
+        return source if source.strip() else " "  # 非空就返回原源码，空则返回一个空格
+    except (OSError, TypeError, AttributeError):
+        # 报错时返回一行占位内容（不是空字符串！）
+        return " "  # 关键修改：返回单个空格，splitlines() 后会得到 [" "]
+
+# 替换 inspect 的 getsource 为安全版本
+inspect.getsource = safe_getsource
 
 import os
+
+# 禁用 transformers 的 docstring 相关检查
+os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
+os.environ["TRANSFORMERS_DISABLE_DOCSTRING_CHECK"] = "1"
+
 import sys
 import tkinter as tk
 from tkinter import messagebox

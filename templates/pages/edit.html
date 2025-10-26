@@ -208,7 +208,7 @@
             }
 
             // 保留选中状态判断
-            const selected = ("{{ note.category_id|tojson if note else 'null' }}" === node.id) ? 'selected' : '';
+            const selected = (String("{{ note.category_id|tojson if note else 'null' }}") === String(node.id)) ? 'selected' : '';
             options += `<option value="${node.id}" ${selected}>${prefix}${node.name}</option>`;
 
             if (node.children.length > 0) {
@@ -239,13 +239,14 @@
           $('#addCategoryModal').modal('hide');
         }
       });
+    document.getElementById('newCategoryName').value = '';
   });
 
   // 页面加载时初始化分类
   loadCategories();
 
   // 图片上传与OCR处理
-  let uploadData = null; // 存储上传后的本地路径信息
+  let uploadData = null; // 存储上传后的路径信息
   let ocrText = '';      // 存储OCR识别后的文字
   const confirmBtn = document.getElementById('confirmSelectBtn');
   const cancelBtn = document.getElementById('cancelSelectBtn');
@@ -257,23 +258,7 @@
   const progress = document.getElementById('ocrProgress');
   const resultDiv = document.getElementById('ocrResult');
   const contentBox = document.getElementById('content_md');
-
-  // 保存文件对象的变量
-  let base64Data = null;
-
-  // 将图片文件转换为base64的函数
-  function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        // 移除data URL前缀（如"data:image/jpeg;base64,"）
-        const base64 = reader;
-        resolve(base64);
-      };
-      reader.onerror = error => reject(error);
-    });
-  }
+  const actionBtns = document.getElementById('actionBtns'); // 补充获取操作按钮容器
 
   // 1. 确认选中按钮 - 功能：上传图片+预览，切换按钮状态
   confirmBtn.addEventListener('click', async () => {
@@ -285,16 +270,13 @@
       return;
     }
 
-    base64Data = await fileToBase64(file);
-    console.log(base64Data);
-
     // 显示预览区和进度条
     preview.classList.remove('d-none');
     progress.style.display = 'block';
     progress.querySelector('.progress-bar').style.width = '30%';
 
     try {
-      // 上传图片（仅上传，不触发OCR）
+      // 上传图片
       const formData = new FormData();
       formData.append('image', file);
       const uploadRes = await fetch('{{ url_for("home_blueprint.upload_image") }}', {
@@ -311,7 +293,7 @@
         throw new Error(uploadData.error || '上传未返回有效图片地址');
       }
 
-      // 本地预览图片（保持之前的FileReader逻辑）
+      // 本地预览图片
       const reader = new FileReader();
       reader.onload = (e) => {
         previewImg.src = e.target.result;
@@ -322,7 +304,7 @@
       progress.querySelector('.progress-bar').style.width = '100%';
       confirmBtn.classList.add('d-none');
       actionBtns.classList.remove('d-none');
-      resultDiv.innerHTML = '<div class="alert alert-info">图片已选中，可转文字（开发中）或直接插入</div>';
+      resultDiv.innerHTML = '<div class="alert alert-info">图片已选中，可转文字或直接插入</div>';
 
     } catch (err) {
       resultDiv.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
@@ -342,7 +324,6 @@
     actionBtns.classList.add('d-none');
     // 清空状态和预览
     uploadData = null;
-    base64Data = null;
     ocrText = '';
     fileInput.value = ''; // 清空文件选择
     previewImg.src = '';
@@ -350,70 +331,66 @@
     resultDiv.innerHTML = '';
   });
 
-  // 3. 图片转文字按钮 - 功能：调用OCR识别，保存结果
   ocrBtn.addEventListener('click', async () => {
     event.preventDefault();
     event.stopPropagation();
-    // 临时提示：功能暂未支持
-    resultDiv.innerHTML = '<div class="alert alert-info">图片转文字功能暂未开放，敬请期待</div>';
-    return; // 阻止后续无效请求
-    if (!uploadData) {
-      resultDiv.innerHTML = '<div class="alert alert-warning">请先选中并上传图片</div>';
+
+    // 检查是否有选中的图片文件（直接使用本地文件，无需依赖先上传的URL）
+    const file = fileInput.files[0];
+    if (!file) {
+      resultDiv.innerHTML = '<div class="alert alert-warning">请先选择并确认图片</div>';
       return;
     }
 
     progress.style.display = 'block';
     progress.querySelector('.progress-bar').style.width = '30%';
-    resultDiv.innerHTML = '<div class="alert alert-info">正在识别文字，请稍候...</div>';
+    resultDiv.innerHTML = '<div class="alert alert-info">正在识别文字，请稍候（首次使用可能需要等待模型下载（约 340 MB），时间可能较长）...</div>';
 
     try {
-      // 使用base64数据（适用于本地图片）
-      const requestBody = { image_data: base64Data };
+      // 构建FormData，直接发送图片文件（符合Image格式输入要求）
+      const formData = new FormData();
+      formData.append('image', file); // 键名'image'需与后端ocr_page()接收的参数名一致
 
-      // 使用base64 API端点
-      const apiEndpoint = '{{ url_for("deepseek_blueprint.deepseek_ocr_base64") }}';
-
+      // 调用ocr_blueprint.ocr_page接口，发送图片文件
+      const apiEndpoint = '{{ url_for("ocr_blueprint.ocr_page") }}';
       const ocrRes = await fetch(apiEndpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        body: formData // 无需设置Content-Type，浏览器会自动处理为multipart/form-data
       });
 
       let ocrResponse;
       try {
-        ocrResponse = await ocrRes.json();
+        ocrResponse = await ocrRes.json(); // 解析返回的JSON
       } catch (e) {
         throw new Error('识别服务响应格式异常，请稍后再试');
       }
 
-      if (!ocrRes.ok) {
-        let errorMsg;
-        if (ocrResponse.error.includes('请先配置DeepSeek API密钥')) {
-          errorMsg = `识别失败：需配置API密钥。<br>
-                      <a href="{{ url_for('home_blueprint.settings') }}" class="alert-link">前往设置页面</a>`;
-        } else if (ocrResponse.error.includes('缺少图片URL参数')) {
-          errorMsg = '识别失败：图片数据无效，请重新上传';
-        } else {
-          errorMsg = `识别失败：${ocrResponse.error}`;
+      // 处理识别结果
+      if (!ocrResponse.success) {
+        // 失败时提取error信息
+        let errorMsg = ocrResponse.error || '识别失败，请重试';
+        // 特殊错误场景处理（如需要配置密钥）
+        if (errorMsg.includes('API密钥')) {
+          errorMsg += `<br><a href="{{ url_for('home_blueprint.settings') }}" class="alert-link">前往设置页面</a>`;
         }
         throw new Error(errorMsg);
       }
 
-      if (!ocrResponse.success) {
-        throw new Error('未识别到文字，可能图片中无有效文字');
-      }
-
       // 检查识别结果是否有效
-      if (!ocrResponse.text || ocrResponse.text.trim() === '' || ocrResponse.text.includes('未识别到文字')) {
+      if (!ocrResponse.text || ocrResponse.text.trim() === '') {
         throw new Error('未识别到有效文字，请尝试更清晰的图片');
       }
 
       // 保存识别结果，更新状态
       ocrText = ocrResponse.text;
       progress.querySelector('.progress-bar').style.width = '100%';
+      // 显示识别结果（包含可选的置信度）
+      const confidenceInfo = ocrResponse.confidence ?
+        `<small>识别置信度：${(ocrResponse.confidence * 100).toFixed(1)}%</small><br>` : '';
       resultDiv.innerHTML = `
         <div class="alert alert-success">
           <strong>文字识别成功！</strong><br>
+          ${confidenceInfo}
           可点击"插入题目"添加到内容框
         </div>
         <div class="mt-2 p-2 border rounded bg-light">
@@ -445,12 +422,10 @@
     if (ocrText) {
       insertContent = `\n\n<!-- 图片识别内容开始 -->\n${ocrText}\n<!-- 图片识别内容结束 -->\n\n`;
     }
-    // 插入图片链接（本地路径，保持用户需求）
-    // insertContent += `\n![题目图片](${base64Data.result})\n`;
+    // 插入图片链接
     insertContent += `\n![题目图片](${uploadData.image_url})\n`;
 
-    // 添加到内容框（光标位置插入，优化体验）
-    const contentBox = document.getElementById('content_md');
+    // 添加到内容框（光标位置插入）
     const cursorPos = contentBox.selectionStart;
     const currentValue = contentBox.value;
     contentBox.value = currentValue.substring(0, cursorPos) + insertContent + currentValue.substring(cursorPos);
