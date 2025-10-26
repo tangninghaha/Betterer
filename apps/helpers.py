@@ -10,7 +10,7 @@ from apps.config import Config
 from marshmallow import ValidationError
 from apps.messages import Messages
 from functools import wraps
-from flask import request
+from flask import request, url_for
 from uuid import uuid4
 import datetime, time
 message = Messages.message
@@ -72,8 +72,7 @@ def uniqueFileName(file_name):
 
 def serverImageUrl(file_name):
     """ for Unique file name"""
-    url = f'{FTP_IMAGE_URL}{file_name}'
-    return url
+    return url_for('home_blueprint.uploaded_file', filename=file_name, _external=True)
 
 def errorColor(error):
     """ for terminal input error color """

@@ -1,6 +1,11 @@
 # flask_app.spec
 import sys
 from pathlib import Path
+import os
+import rapidocr  # 导入库，用于定位安装路径
+import doclayout_yolo # 导入库，用于定位安装路径
+import cnocr
+import spellchecker
 
 block_cipher = None
 
@@ -28,6 +33,7 @@ def get_all_routes_modules():
 
 # 调用函数获取所有 routes 模块
 all_routes = get_all_routes_modules()
+rapidocr_dir = os.path.dirname(rapidocr.__file__)
 
 a = Analysis(
     ['run.py'],  # 入口文件
@@ -37,6 +43,36 @@ a = Analysis(
         # 包含静态文件和模板（源路径: 打包后路径）
         (str(root_path / "templates"), "templates"),
         (str(root_path / "static"), "static"),
+        (str(root_path / "docs"), "docs"),
+        (os.path.join(rapidocr_dir, "default_models.yaml"), "rapidocr"),
+        (
+            os.path.join(os.path.dirname(doclayout_yolo.__file__), "cfg", "default.yaml"),
+            "doclayout_yolo/cfg"  # 目标路径：打包后文件放在 doclayout_yolo/cfg 目录下
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "label_cn.txt"),
+            "cnocr"  # 打包后放在 cnocr 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "label_number.txt"),
+            "cnocr"  # 打包后放在 cnocr 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "ppocr", "utils", "chinese_cht_dict.txt"),
+            "cnocr/ppocr/utils"  # 打包后放在 cnocr/ppocr/utils 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "ppocr", "utils", "en_dict.txt"),
+            "cnocr/ppocr/utils"  # 打包后放在 cnocr/ppocr/utils 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "ppocr", "utils", "ppocr_keys_v1.txt"),
+            "cnocr/ppocr/utils"  # 打包后放在 cnocr/ppocr/utils 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(spellchecker.__file__), "resources"),
+            "spellchecker/resources"
+        )
     ],
     hiddenimports=[
         # 显式声明Flask相关隐式依赖
@@ -45,7 +81,7 @@ a = Analysis(
         "flask_login",
         "markdown.extensions.extra",
         "markdown.extensions.codehilite",
-        "markdown.extensions.mdx_math",
+        "mdx_math",
         "celery.fixups",
         "celery.fixups.flask",
         "celery.fixups.django",
@@ -78,10 +114,11 @@ exe = EXE(
     upx=True,  # 压缩EXE
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # 显示控制台（调试用，发布时可改为False）
+    console=True,  # 显示控制台（调试用，发布时可改为False）
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon="static\\assets\\images\\favicon.ico",
 )

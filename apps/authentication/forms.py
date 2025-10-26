@@ -37,5 +37,5 @@ class ChangePasswordForm(FlaskForm):
     submit = SubmitField('修改密码')
 
 class SettingsForm(FlaskForm):
-    deepseek_api_key = StringField('DeepSeek API密钥', validators=[DataRequired(message='请输入 API 密钥')])
+    deepseek_api_key = StringField('DeepSeek API密钥', validators=[])
     submit = SubmitField('保存设置')
