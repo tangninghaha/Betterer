@@ -344,7 +344,7 @@
 
     progress.style.display = 'block';
     progress.querySelector('.progress-bar').style.width = '30%';
-    resultDiv.innerHTML = '<div class="alert alert-info">正在识别文字，请稍候（首次使用可能需要等待模型下载（约 340 MB），时间可能较长）...</div>';
+    resultDiv.innerHTML = '<div class="alert alert-info">正在识别文字，请稍候（首次使用可能需要等待模型下载，时间可能较长，可在控制台查看进度）...</div>';
 
     try {
       // 构建FormData，直接发送图片文件（符合Image格式输入要求）

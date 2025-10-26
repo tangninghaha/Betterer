@@ -4,7 +4,8 @@ from pathlib import Path
 import os
 import rapidocr  # 导入库，用于定位安装路径
 import doclayout_yolo # 导入库，用于定位安装路径
-
+import cnocr
+import spellchecker
 
 block_cipher = None
 
@@ -48,6 +49,30 @@ a = Analysis(
             os.path.join(os.path.dirname(doclayout_yolo.__file__), "cfg", "default.yaml"),
             "doclayout_yolo/cfg"  # 目标路径：打包后文件放在 doclayout_yolo/cfg 目录下
         ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "label_cn.txt"),
+            "cnocr"  # 打包后放在 cnocr 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "label_number.txt"),
+            "cnocr"  # 打包后放在 cnocr 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "ppocr", "utils", "chinese_cht_dict.txt"),
+            "cnocr/ppocr/utils"  # 打包后放在 cnocr/ppocr/utils 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "ppocr", "utils", "en_dict.txt"),
+            "cnocr/ppocr/utils"  # 打包后放在 cnocr/ppocr/utils 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(cnocr.__file__), "ppocr", "utils", "ppocr_keys_v1.txt"),
+            "cnocr/ppocr/utils"  # 打包后放在 cnocr/ppocr/utils 目录下，和原结构一致
+        ),
+        (
+            os.path.join(os.path.dirname(spellchecker.__file__), "resources"),
+            "spellchecker/resources"
+        )
     ],
     hiddenimports=[
         # 显式声明Flask相关隐式依赖

@@ -62,15 +62,19 @@ def ocr_page():
 
         # 5. 初始化Pix2Text并进行OCR识别
         p2t = Pix2Text.from_config()  # 使用默认配置
-        out_page = p2t.recognize_page(str(upload_file_path))  # 传入图片路径识别
+        # out_page = p2t.recognize_page(str(upload_file_path))  # 传入图片路径识别
+        result = p2t.recognize_text_formula(str(upload_file_path))  # 传入图片路径识别
 
         # 6. 调用to_markdown（传入必填的输出目录，其他参数可选）
         # out_dir：保存中间文件（如公式图片）的目录；markdown_fn设为None则不生成本地文件，仅返回字符串
+        """ recognize_page 用
         result = out_page.to_markdown(
             out_dir=str(ocr_output_dir),  # 必填参数：OCR输出目录
             root_url=None,  # 无需网络访问，留空
             markdown_fn=None  # 不生成本地.md文件，仅返回字符串结果
         )
+        """
+
 
         # 7. 检查识别结果是否有效
         if not result or result.strip() == '':
